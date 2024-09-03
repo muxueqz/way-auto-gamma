@@ -1,12 +1,14 @@
 #!/bin/bash
 
 # 初始化变量，保存上一次的灰度值
+monitor=$(i3-msg -t get_outputs | jello | grep '"name"' | cut -d'"' -f4 | head -1)
+
 previous_gray_value=0
 screenshot_file=/dev/shm/screenshot-for-adjust.png
 
 while true; do
 	# 截图保存为screenshot.png
-	grim $screenshot_file
+	grim -l 0 -o $monitor $screenshot_file
 
 	# 获取灰度值
 	gray_value=$(python3 get-gray.py $screenshot_file)
@@ -24,8 +26,10 @@ while true; do
 		else
 			gamma_value=0.8
 		fi
-		killall redshift
-		redshift -g $gamma_value:$gamma_value:$gamma_value -l 26.0960622048:119.3065881729 -o &
+		killall wlsunset
+		wlsunset -g $gamma_value -l 26.0960622048 -L 119.3065881729 -t 4500 &
+		# killall redshift
+		# redshift -g $gamma_value:$gamma_value:$gamma_value -l 26.0960622048:119.3065881729 -o &
 		echo "Gamma set to $gamma_value due to gray value: $gray_value"
 	fi
 
@@ -33,5 +37,7 @@ while true; do
 	previous_gray_value=$gray_value
 
 	# 每秒循环一次
-	sleep 1
+	sleep 0.5
 done
+gamma_value=1.0
+wlsunset -g $gamma_value -l 26.0960622048 -L 119.3065881729 -t 4500
